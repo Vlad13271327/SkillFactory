@@ -1,0 +1,100 @@
+def greet():
+    print("------------------------")
+    print("    Приветствуем вас    ")
+    print("         в игре         ")
+    print("    крестики--нолики    ")
+    print("------------------------")
+    print("    формат ввода: x  y  ")
+    print()
+    print("    x - номер строки    ")
+    print("    y - номер столбца   ")
+    print("------------------------")
+
+def show():
+    print()
+    print("  | 0 | 1 | 2 |")
+    print("---------------")
+    for i in range(3):
+        row_info = " | ".join(field[i])
+        print(f"{i} | {row_info} |")
+        print("---------------")
+    print()
+
+def ask():
+    while True:
+        print()
+        cords = input("Ваш ход! Нужно ввести через пробел 2 числа от 0 до 2 включительно: ").split()
+        print("------------------------------------")
+
+        if len(cords) != 2:
+            print ("    Нужно ввести 2 координаты!")
+            continue
+
+        x, y = cords
+
+        if not(x.isdigit()) or not(y.isdigit()):
+            print("    Нужно вводить только числа!")
+            continue
+
+        x, y = int(x), int(y)
+
+        if 0>x or x>2 or 0>y or y>2:
+            print("     Координаты должны быть только от 0 до 2 включительно!")
+            continue
+
+        if field[x][y] != " ":
+            print("    Эта клетка уже занята! Выберите другую!")
+            continue
+
+        print(f"    Ваш ход: {x} {y}")
+        return x, y
+
+def check_win():
+    win_cord = (((0, 0), (0, 1), (0, 2)), ((1, 0), (1, 1), (1, 2)), ((2, 0), (2, 1), (2, 2)),
+                ((0, 0), (1, 0), (2, 0)), ((0, 1), (1, 1), (2, 1)), ((0, 2), (1, 2), (2, 2)),
+                ((0, 0), (1, 1), (2, 2)), ((2, 0), (1, 1), (0, 2)))
+    for cord in win_cord:
+        win_x = ["X"]*3
+        win_zero = ["0"]*3
+        symbols = []
+
+        for cell in cord:
+            symbols.append(field[cell[0]][cell[1]])
+        if symbols == win_x:
+            show()
+            print("    Победа!!! Выиграл крестик!!!")
+            return True
+        if symbols == win_zero:
+            show()
+            print("    Победа!!! Выиграл нолик!!!")
+            return True
+    return False
+
+
+greet()
+field = [[" "] * 3 for i in range(3)]
+count = 0
+
+while True:
+    count += 1
+
+    show()
+
+    if count % 2 == 1:
+        print("Ходит крестик")
+    else:
+        print("Ходит нолик")
+
+    x, y = ask()
+
+    if count % 2 == 1:
+        field[x][y] = "X"
+    else:
+        field[x][y] = "0"
+
+    if check_win():
+        break
+
+    if count == 9:
+        print("Ничья")
+        break
