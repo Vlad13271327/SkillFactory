@@ -99,7 +99,7 @@ def ask_question(message: types.Message, k=-2, counts=None):
 @bot.message_handler()
 def process_answer(message: types.Message, k, counts):
     if message.text.lower() == 'end':
-        end_game(message)
+        final_choice(message)
     try:
         if re.search(r'^([1-4]\.\s)', message.text):
             counts[message.text[0]] += 1
@@ -209,7 +209,7 @@ def end_game(message):
 def share(message):
     keyboard = types.InlineKeyboardMarkup()
     share_text = f"Мое тотемное животное: {calculation_results()}!\n"
-    url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?url=https:&title={share_text}")
+    url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?https:&title={share_text}")
     keyboard.add(url_button)
     bot.send_message(message.chat.id, "⬇️ Вы можете поделиться с друзьями в vk, нажав по кнопке ниже:",
                      reply_markup=keyboard)
