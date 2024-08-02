@@ -12,8 +12,9 @@ bot = telebot.TeleBot(TOKEN)
 # 2. Начало работы с ботом (/start и /help)
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
-    text = ('👋🏼 Здравствуйте! Вы пришли как раз вовремя,опали на викторину, связанную с Московским зоопарком, \
-на тему "Какое у вас тотемное животное?". \n\n Вы всегда можете прервать викторину, введя сообщение: end \
+    text = ('👋🏼 Здравствуйте! Вы пришли вовремя и попали на викторину, связанную с Московским зоопарком, \
+на тему "Какое у вас тотемное животное?". \n\n Вы всегда можете прервать викторину, введя сообщение: end . '
+            'Но, если вы пройдёте её до конца, то сможете поделиться результатом с друзьми в VK \
  \n\n\
 Если вы готовы начать, тогда нажмите на кнопку ниже – "Начать тест". \n\n‼️ Для дополнительной информации можете также связаться \
 с сотрудником зоопарка, нажав по кнопке ниже.')
@@ -41,8 +42,7 @@ def button_start():
                                           message.text.lower() == 'играть снова' or
                                           message.text.lower() == 'end' or
                                           message.text.lower() == 'перейти на официальный сайт московского зоопарка' or
-                                          message.text.lower() == 'расскажите мне о программе опеки' or
-                                          message.text.lower() == 'поделиться в vk')
+                                          message.text.lower() == 'расскажите мне о программе опеки' )
 def handle_text(message):
     try:
         if message.text.lower() == 'начать тест' or message.text.lower() == 'играть снова':
@@ -51,12 +51,10 @@ def handle_text(message):
             contact_zoo_staff(message)
         elif message.text.lower() == 'перейти на официальный сайт московского зоопарка':
             MoskowZooSite(message)
-        # elif message.text.lower() == 'end':
-        #     end_game(message)
+        elif message.text.lower() == 'end':
+            final_choice(message)
         elif message.text.lower() == 'расскажите мне о программе опеки':
             guardianship_program(message)
-        elif message.text.lower() == 'поделиться в vk':
-            share(message)
     except InputException as e:
         bot.reply_to(message, f"‼️ Ошибка отправки сообщения: \n{e}")
 
@@ -110,12 +108,6 @@ def process_answer(message: types.Message, k, counts):
         bot.reply_to(message, f"‼️ Ошибка отправки сообщения: \n{e}")
         ask_question(message, k-1, counts)
 
-    # try:
-    #     if message.text.lower() == 'end':
-    #         final_choice(message)
-    # except InputException as e:
-    #     bot.reply_to(message, f"‼️ Ошибка отправки сообщения: \n{e}")
-    #     ask_question(message, k-1, counts)
     print(counts)
 
 
@@ -123,6 +115,8 @@ def process_answer(message: types.Message, k, counts):
 def calculation_results(counts, message):
     max_count = max(counts.values())
     max_categories = [cat for cat, count in counts.items() if count == max_count]
+
+    keyboard = types.InlineKeyboardMarkup()
 
     totem_info = {
         '1': ("🐺 Волк — символизирует свободу и интуицию. Волки известны своей социальной организованностью, живут и охотятся в стаях, что говорит о их глубоких социальных связях. Они обладают выдающимися интуитивными способностями, помогающими им выживать в дикой природе. Волк также является символом свободы духа, смелости и независимости, он не боится идти своим путем.", "CAACAgIAAxkBAAEMcGBmh7RGtirsKplZgx9YvyxQRmEyWwAClU4AAos6QUgfEYkYUBjSWTUE"),
@@ -144,18 +138,31 @@ def calculation_results(counts, message):
     if len(max_categories) == 1:
         animal_info = totem_info[str(max_categories[0])]
         animal_sticker = list(totem_info.values())[int(max_categories[0]) - 1][1]
+        share_text = f"Мое тотемное животное: {animal_info} {animal_sticker}!\n"
+        url_button = types.InlineKeyboardButton(text="Поделиться в vk",
+                                                url=f"https://vk.com/share.php?&title={share_text}")
+        keyboard.add(url_button)
         bot.send_message(message.chat.id, animal_info)
         bot.send_sticker(message.chat.id, animal_sticker)
+        bot.send_message(message.chat.id, "⬇️ Вы можете поделиться с друзьями в vk, нажав по кнопке ниже:",
+                         reply_markup=keyboard)
         final_choice(message)
+
+
     else:
         animal_info = totem_info[tuple(sorted(max_categories))]
         animal_sticker = totem_info[tuple(sorted(max_categories))][1]
+        share_text = f"Мое тотемное животное: {animal_info} {animal_sticker}!\n"
+        url_button = types.InlineKeyboardButton(text="Поделиться в vk",
+                                                url=f"https://vk.com/share.php?&title={share_text}")
+        keyboard.add(url_button)
         bot.send_message(message.chat.id, animal_info)
         bot.send_sticker(message.chat.id, animal_sticker)
+        bot.send_message(message.chat.id, "⬇️ Вы можете поделиться с друзьями в vk, нажав по кнопке ниже:",
+                         reply_markup=keyboard)
         final_choice(message)
 
-    return animal_info
-            # animal_sticker
+
 
 # 10. Функция, для предложения сыграть снова.
 def final_choice(message):
@@ -165,13 +172,11 @@ def final_choice(message):
     button2 = types.KeyboardButton("Перейти на официальный сайт Московского Зоопарка")
     button3 = types.KeyboardButton("Расскажите мне о программе опеки")
     button4 = types.KeyboardButton("Играть снова")
-    button5 = types.KeyboardButton("Поделиться в vk")
 
     markup.add(button1)
     markup.add(button2)
     markup.add(button3)
     markup.add(button4)
-    markup.add(button5)
 
     bot.send_message(message.chat.id, '⬇️ Выберите то, что вам нужно, нажав по кнопке ниже', reply_markup=markup)
 
@@ -199,26 +204,7 @@ def guardianship_program(message):
     bot.send_message(message.chat.id, custody)
 
 
-# 13. Функция окончания игры.
-def end_game(message):
-    bot.send_message(message.chat.id, "Отлично сыграли! ✅\n\n‼️ Переходите на сайт зоопарка, для получения большей \
-информации о животных, по ссылке:\n\n– https://moscowzoo.ru\n– https://moscowzoo.ru\n– https://moscowzoo.ru")
-    bot.stop_bot()
-
-#14. Функция поделиться в vk
-def share(message):
-    keyboard = types.InlineKeyboardMarkup()
-    share_text = f"Мое тотемное животное: {calculation_results(message)}!\n"
-    url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?&title={share_text}")
-    keyboard.add(url_button)
-    bot.send_message(message.chat.id, "⬇️ Вы можете поделиться с друзьями в vk, нажав по кнопке ниже:",
-                     reply_markup=keyboard)
-
-
-# url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?url=https:&title={share_text}&image={share_text}")
-
-
-# 15. Запуск бота.
+# 13. Запуск бота.
 if __name__ == '__main__':
     bot.infinity_polling()
 
