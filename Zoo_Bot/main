@@ -51,8 +51,8 @@ def handle_text(message):
             contact_zoo_staff(message)
         elif message.text.lower() == 'перейти на официальный сайт московского зоопарка':
             MoskowZooSite(message)
-        elif message.text.lower() == 'end':
-            end_game(message)
+        # elif message.text.lower() == 'end':
+        #     end_game(message)
         elif message.text.lower() == 'расскажите мне о программе опеки':
             guardianship_program(message)
         elif message.text.lower() == 'поделиться в vk':
@@ -99,7 +99,7 @@ def ask_question(message: types.Message, k=-2, counts=None):
 @bot.message_handler()
 def process_answer(message: types.Message, k, counts):
     if message.text.lower() == 'end':
-        final_choice(message)
+        return final_choice(message)
     try:
         if re.search(r'^([1-4]\.\s)', message.text):
             counts[message.text[0]] += 1
@@ -208,8 +208,8 @@ def end_game(message):
 #14. Функция поделиться в vk
 def share(message):
     keyboard = types.InlineKeyboardMarkup()
-    share_text = f"Мое тотемное животное: {calculation_results()}!\n"
-    url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?https:&title={share_text}")
+    share_text = f"Мое тотемное животное: {calculation_results(message)}!\n"
+    url_button = types.InlineKeyboardButton(text="Поделиться в vk", url= f"https://vk.com/share.php?&title={share_text}")
     keyboard.add(url_button)
     bot.send_message(message.chat.id, "⬇️ Вы можете поделиться с друзьями в vk, нажав по кнопке ниже:",
                      reply_markup=keyboard)
